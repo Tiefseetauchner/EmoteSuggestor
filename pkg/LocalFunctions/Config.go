@@ -1,4 +1,4 @@
-package LocalFunctions
+package localFunctions
 
 import (
 	"encoding/json"

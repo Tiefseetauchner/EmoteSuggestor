@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	var config = dc_emotesuggestor_libs.LoadConfiguration()
+	var config = localFuntions.LoadConfiguration()
 
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + config.Token)
