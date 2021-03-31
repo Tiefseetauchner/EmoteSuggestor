@@ -1,4 +1,4 @@
-package main
+package dc_emotesuggestor_libs
 
 import (
 	"encoding/json"
