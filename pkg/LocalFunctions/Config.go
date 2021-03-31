@@ -1,4 +1,4 @@
-package dc_emotesuggestor_libs
+package LocalFunctions
 
 import (
 	"encoding/json"

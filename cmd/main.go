@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
+	"go/ast"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/Tiefseetauchner/EmoteSuggestor"
+	"github.com/Tiefseetauchner/EmoteSuggestor/pkg"
 )
 
 func main() {
-	var config = LoadConfiguration("./config.json")
+	var config = dc_emotesuggestor_libs.LoadConfiguration()
 
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + config.Token)
