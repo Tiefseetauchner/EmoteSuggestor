@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go/types"
 	"os"
 	"os/signal"
-	"reflect"
 	"regexp"
 	"strings"
 	"syscall"
@@ -77,7 +75,9 @@ func runCommand(command string, arguments string, session *discordgo.Session, me
 		sendMessage(session, message.ChannelID, helpMsg)
 		break
 	case "suggest":
-		if localFunctions.contains(listeningChannels, message.ChannelID)
+		if localFunctions.contains(listeningChannels, message.ChannelID) {
+
+		}
 		usage := "```\n" +
 			"!suggest name [link] ...: suggests adding emote from link with name name to emojis\n" +
 			"!suggest name: suggests adding emote from attachment with name name to emojis\n" +

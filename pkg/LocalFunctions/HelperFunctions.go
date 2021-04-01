@@ -1,6 +1,6 @@
 package localFunctions
 
-func contains(s []int, e int) bool {
+func contains(s []string, e string) bool {
 	for _, a := range s {
 		if a == e {
 			return true
