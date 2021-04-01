@@ -75,7 +75,7 @@ func runCommand(command string, arguments string, session *discordgo.Session, me
 		sendMessage(session, message.ChannelID, helpMsg)
 		break
 	case "suggest":
-		if localFunctions.contains(listeningChannels, message.ChannelID) {
+		if localFunctions.Contains(listeningChannels, message.ChannelID) {
 
 		}
 		usage := "```\n" +
