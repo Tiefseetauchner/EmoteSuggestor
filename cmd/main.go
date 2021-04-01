@@ -2,17 +2,26 @@ package main
 
 import (
 	"fmt"
-	"go/ast"
 	"os"
 	"os/signal"
+	"regexp"
+	"strings"
 	"syscall"
 
+	"github.com/Tiefseetauchner/EmoteSuggestor/pkg/LocalFunctions"
 	"github.com/bwmarrin/discordgo"
-	"github.com/Tiefseetauchner/EmoteSuggestor/pkg"
 )
 
+var commands = []string{"a", "b"}
+var commandRegex = regexp.MustCompile(`^[!](\p{L}+)[ ]?(.*)$`)
+var helpMsg = "**Help**\n" +
+	"```\n" +
+	"!suggest [link]: adds an emoji from a link or the attachment\n" +
+	"!help: shows this help\n" +
+	"```\n"
+
 func main() {
-	var config = localFuntions.LoadConfiguration()
+	var config = localFunctions.LoadConfiguration("./config.json")
 
 	// Create a new Discord session using the provided bot token.
 	dg, err := discordgo.New("Bot " + config.Token)
@@ -44,22 +53,41 @@ func main() {
 	dg.Close()
 }
 
-// This function will be called (due to AddHandler above) every time a new
-// message is created on any channel that the authenticated bot has access to.
-func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-
-	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
-	if m.Author.ID == s.State.User.ID {
+func messageCreate(session *discordgo.Session, message *discordgo.MessageCreate) {
+	if message.Author.ID == session.State.User.ID {
 		return
 	}
-	// If the message is "ping" reply with "Pong!"
-	if m.Content == "ping" {
-		s.ChannelMessageSend(m.ChannelID, "Pong!")
-	}
 
-	// If the message is "pong" reply with "Ping!"
-	if m.Content == "pong" {
-		s.ChannelMessageSend(m.ChannelID, "Ping!")
+	if []rune(message.Content)[0] == '!' {
+		if commandRegex.Match([]byte(message.Content)) {
+			var command = commandRegex.FindStringSubmatch(message.Content)[1]
+			var arguments = commandRegex.FindStringSubmatch(message.Content)[2]
+
+			runCommand(command, arguments, session, message)
+		}
+	}
+}
+
+func runCommand(command string, arguments string, session *discordgo.Session, message *discordgo.MessageCreate) {
+	switch command {
+	case "help":
+		_, _ = session.ChannelMessageSend(message.ChannelID, helpMsg)
+		break
+	case "suggest":
+		if len(message.Attachments) != 0 {
+			_, _ = session.ChannelMessageSend(message.ChannelID, "Suggesting adding: "+message.Attachments[0].URL)
+		} else if len(arguments) > 0 {
+			args := strings.Split(arguments, " ")
+			_, _ = session.ChannelMessageSend(message.ChannelID, "Suggesting adding: "+args[0])
+		} else {
+			_, _ = session.ChannelMessageSend(message.ChannelID, "No link or Embed provided. Usage:\n"+
+				"```\n"+
+				"!suggest name [link] ...: suggests adding emote from link with name name to emojis\n"+
+				"!suggest name: suggests adding emote from attachment with name name to emojis"+
+				"```")
+		}
+	default:
+		_, _ = session.ChannelMessageSend(message.ChannelID, "Command "+command+
+			" not found. Type !help for a list of commands")
 	}
 }
