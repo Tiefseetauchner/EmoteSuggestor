@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"go/types"
 	"os"
 	"os/signal"
+	"reflect"
 	"regexp"
 	"strings"
 	"syscall"
@@ -13,6 +15,7 @@ import (
 )
 
 var commands = []string{"a", "b"}
+var listeningChannels = []string{}
 var commandRegex = regexp.MustCompile(`^[!](\p{L}+)[ ]?(.*)$`)
 var helpMsg = "**Help**\n" +
 	"```\n" +
@@ -71,23 +74,39 @@ func messageCreate(session *discordgo.Session, message *discordgo.MessageCreate)
 func runCommand(command string, arguments string, session *discordgo.Session, message *discordgo.MessageCreate) {
 	switch command {
 	case "help":
-		_, _ = session.ChannelMessageSend(message.ChannelID, helpMsg)
+		sendMessage(session, message.ChannelID, helpMsg)
 		break
 	case "suggest":
-		if len(message.Attachments) != 0 {
-			_, _ = session.ChannelMessageSend(message.ChannelID, "Suggesting adding: "+message.Attachments[0].URL)
+		if localFunctions.contains(listeningChannels, message.ChannelID)
+		usage := "```\n" +
+			"!suggest name [link] ...: suggests adding emote from link with name name to emojis\n" +
+			"!suggest name: suggests adding emote from attachment with name name to emojis\n" +
+			"```"
+		if len(message.Attachments) > 0 {
+			args := strings.Split(strings.TrimSpace(arguments), " ")
+			if len(args) != 1 {
+				sendMessage(session, message.ChannelID, "Invalid command. Usage: "+usage)
+			}
+			sendMessage(session, message.ChannelID, "Suggesting adding: "+args[0])
 		} else if len(arguments) > 0 {
-			args := strings.Split(arguments, " ")
-			_, _ = session.ChannelMessageSend(message.ChannelID, "Suggesting adding: "+args[0])
+			args := strings.Split(strings.TrimSpace(arguments), " ")
+			if len(args) != 2 {
+				sendMessage(session, message.ChannelID, "Invalid command. Usage: "+usage)
+			} else {
+				sendMessage(session, message.ChannelID, "Suggesting adding: "+args[0])
+			}
 		} else {
-			_, _ = session.ChannelMessageSend(message.ChannelID, "No link or Embed provided. Usage:\n"+
-				"```\n"+
-				"!suggest name [link] ...: suggests adding emote from link with name name to emojis\n"+
-				"!suggest name: suggests adding emote from attachment with name name to emojis"+
-				"```")
+			sendMessage(session, message.ChannelID, "No link or Embed provided. Usage:\n"+usage)
 		}
 	default:
-		_, _ = session.ChannelMessageSend(message.ChannelID, "Command "+command+
-			" not found. Type !help for a list of commands")
+		sendMessage(session, message.ChannelID, "Command "+command+" not found. Type !help for a list of commands")
 	}
+}
+
+func suggestEmote(name string, link string) {
+
+}
+
+func sendMessage(session *discordgo.Session, id string, s string) {
+	_, _ = session.ChannelMessageSend(id, s)
 }
